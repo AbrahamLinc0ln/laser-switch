@@ -2,37 +2,97 @@
 // to create different visual patterns
 // 22/04/2023
 
-#include <SPI.h>
+
+const unsigned int num_chans = 14;
+
+bool lasers[num_chans] = {0};
 
 unsigned int time_diff = 0;
-unsigned int time_curr = 0;
+unsigned int time_prev = 0;
 
-unsigned int period = 1000;
+unsigned int period = 100;
 
-char channels = 0b00000001;
+unsigned int chan = 1;
+
+unsigned int mode = 0;
 
 void setup() {
   Serial.begin(115200);
-  SPI.beginTransaction(SPISettings(5000000, MSBFIRST, SPI_MODE0));
-  SPI.begin();
 
-  delay(500);
+  // set all digi pins to output
+  initDigiOut();  
 
-  time_curr = millis();
+  // init lasers[0]
+  lasers[0] = 1;
+
+  // turn all on for testing
+  Serial.print("Testing...");  
+
+  time_prev = millis();
 }
 
 void loop() {
-time_diff = millis() - time_curr;
+
+time_diff = millis() - time_prev;
 if (time_diff > period) {
-  time_curr = millis();
-  SPI.transfer(channels);
-  if(channels == 1){
-    channels = 0b00000010;
+  Serial.println("here");
+  time_prev = millis();
+
+  // set all the pins
+  setPins();
+
+  switch(mode){
+    case 0: // shift through
+      shiftLasers();
+      break;
+
+    default:
+      break;
+
+  
   }
-  else{
-    channels = 0b00000001;
+  
+  
+  
+}// time check
+  
+}// loop
+
+void initDigiOut(){
+  for(int ii = 0; ii < num_chans; ii++){
+    pinMode(ii,OUTPUT);
   }
 }
-  
 
+void setPins(){
+  Serial.print("lasers = ");
+  for(int ii = 0; ii < num_chans; ii++){
+    digitalWrite(ii,lasers[ii]);
+    Serial.print(lasers[ii]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+void shiftLasers(){
+  bool next_laser = 0;
+  for(int ii = 0; ii < num_chans; ii++){
+    // check if next laser should be turned on
+    if(next_laser){
+      lasers[ii] = 1;
+      next_laser = 0; // turn off next laser
+      break;
+    }
+
+    // check if current laser is on
+    if(lasers[ii]==1){
+      next_laser = 1;
+      lasers[ii] = 0;
+    }
+
+    // if you make it to the end of the list turn on laser 0
+    if(ii == num_chans-1 && next_laser){
+      lasers[0] = 1;
+    }
+  }
 }
