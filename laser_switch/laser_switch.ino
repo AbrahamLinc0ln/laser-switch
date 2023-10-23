@@ -1,9 +1,9 @@
-// Communicates with 8-channel switch to drive 8 laser diodes
+// Drives 8 laser diodes using GPIO
 // to create different visual patterns
 // 22/04/2023
 
 
-const unsigned int num_chans = 14;
+const unsigned int num_chans = 8;
 
 bool lasers[num_chans] = {0};
 
@@ -12,7 +12,7 @@ unsigned int time_prev = 0;
 
 unsigned int period = 100;
 
-unsigned int chan = 1;
+unsigned int chan0 = 2;
 
 unsigned int mode = 0;
 
@@ -60,14 +60,14 @@ if (time_diff > period) {
 
 void initDigiOut(){
   for(int ii = 0; ii < num_chans; ii++){
-    pinMode(ii,OUTPUT);
+    pinMode(chan0 + ii,OUTPUT);
   }
 }
 
 void setPins(){
   Serial.print("lasers = ");
   for(int ii = 0; ii < num_chans; ii++){
-    digitalWrite(ii,lasers[ii]);
+    digitalWrite(chan0 + ii,lasers[ii]);
     Serial.print(lasers[ii]);
     Serial.print(" ");
   }
